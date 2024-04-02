@@ -55,7 +55,7 @@ async function getData(req, res) {
     }
   }
   
-  app.get('/update',updateData)
+  app.put('/update',updateData)
 
   async function updateData(req, res) {
     const { productionValue, date, monthyear, id, modelId } = req.body;
@@ -65,6 +65,7 @@ async function getData(req, res) {
         SET Production_values = @productionValue,
             date = @date,
             monthyear = @monthyear
+            ModelId=@modelId
         WHERE Id = @id 
       `;
       await pool.request()

@@ -159,9 +159,10 @@ import React, { useState, useEffect } from "react";
 const Table = ({ modelIds }) => {
   const [editingCell, setEditingCell] = useState(null);
   const [cellValues, setCellValues] = useState({});
-
+  const[data,setData]=useState({})
   // Function to handle cell click
   const handleCellClick = (rowId, colId) => {
+    console.log("Clicked cell:", rowId, colId);
     setEditingCell({ rowId, colId });
     // Initialize cell value if not present
     setCellValues((prevState) => ({
@@ -172,12 +173,14 @@ const Table = ({ modelIds }) => {
 
   // Function to handle input change
   const handleInputChange = (e) => {
-    const { rowId, colId } = editingCell;
-    const value = e.target.value;
-    setCellValues((prevState) => ({
-      ...prevState,
-      [`${rowId}-${colId}`]: value,
-    }));
+    if (editingCell) {
+      const { rowId, colId } = editingCell;
+      const value = e.target.value;
+      setCellValues((prevState) => ({
+        ...prevState,
+        [`${rowId}-${colId}`]: value,
+      }));
+    }
   };
 
   // Function to handle input blur
@@ -192,12 +195,19 @@ const Table = ({ modelIds }) => {
   // Function to handle saving edited cell values
   const handleSave = async (e) => {
     e.preventDefault();
+    console.log("Current editingCell:", editingCell); 
     if (editingCell) {
       const { rowId, colId } = editingCell;
-      const value = cellValues[`${rowId}-${colId}`];
-
-      try {
-        
+      console.log("rowId:", rowId); // Log the value of rowId
+    console.log("colId:", colId); // Log the value of colId
+    console.log("modelId:", modelIds[rowId]); // Log the value of modelId
+    console.log("Id:", ids[colId]); // Log the value of Id
+     const  value = cellValues[`${rowId}-${colId}`];
+    
+    try {
+    
+      
+        // Make the update request
         const response = await fetch(`http://localhost:8082/update`, {
           method: "PUT",
           headers: {
@@ -209,50 +219,29 @@ const Table = ({ modelIds }) => {
             modelId: modelIds[colId],
           }),
         });
-
+        
+  
+        // Check if the response is successful
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
-        console.log("Data updated successfully");
+        const newData = [...data];
+        newData[rowId][colId] = value;
+        setData(newData);
+  
+        // Update the state if the response is successful
         setEditingCell(null);
+        console.log("Data updated successfully");
       } catch (error) {
         console.error("Error updating data:", error);
       }
     } else {
       console.error("Editing cell is null");
-    }
+  
   };
-
-  // Fetch data from backend when the component mounts
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Function to fetch data from backend
-  const fetchData = async () => {
-    try {
-      const response = await fetch("http://localhost:8082/data");
-      if (!response.ok) {
-        throw new Error("Failed to fetch data");
-      }
-      const jsonData = await response.json();
-      // Update cellValues state with fetched data
-      // Assuming data is in the format { rowId-colId: value }
-      setCellValues(
-        jsonData.data.reduce((acc, row) => {
-          Object.entries(row).forEach(([key, value]) => {
-            if (key !== "Id") {
-              acc[key] = value;
-            }
-          });
-          return acc;
-        }, {})
-      );
-    } catch (error) {
-      console.error("Error fetching data:", error);
     }
-  };
+    
+  
 
   // Generate IDs 1 to 30
   const ids = Array.from({ length: 30 }, (_, i) => i + 1);
@@ -261,7 +250,13 @@ const Table = ({ modelIds }) => {
     <div className="overflow-x-auto">
       <table className="table-auto border border-collapse border-gray-500">
         <thead>
+        <tr className="bg-gray-200">
+      <th colSpan="40" className="text-center">
+        <span className="mx-8">Monthly data for April</span>
+      </th>
+    </tr>
           <tr className="bg-gray-200">
+          
             <th className="border border-gray-500"></th>
             {/* Render IDs horizontally */}
             {ids.map((id) => (
@@ -305,18 +300,20 @@ const Table = ({ modelIds }) => {
         </tbody>
       </table>
       {/* Save button */}
+      <div className="flex justify-center my-10 ">
       <button
         onClick={handleSave}
-        className="py-0 mx-12 border my-7 justify-items-center  border-gray-500 px-6   "
+        className="py-0 mx-4 border   border-gray-500 px-6   "
       >
         Save
       </button>
       <button
         onClick={handleCancel}
-        className="py-0  border  my-7 justify-items-center border-gray-500 px-6 "
+        className="py-0 mx-4 border  border-gray-500 px-6 "
       >
         Cancel
-      </button>
+      </button> 
+      </div>            
     </div>
   );
 };
