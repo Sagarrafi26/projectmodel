@@ -58,20 +58,19 @@ async function getData(req, res) {
   app.put('/update',updateData)
 
   async function updateData(req, res) {
-    const { productionValue, date, monthyear, id, modelId } = req.body;
+    const { productionValue, date, id, modelId } = req.body;
     try {
       const query = `
         UPDATE ModelTable
         SET Production_values = @productionValue,
             date = @date,
-            monthyear = @monthyear
             ModelId=@modelId
         WHERE Id = @id 
       `;
       await pool.request()
         .input('productionValue', sql.Int, productionValue)
         .input('date', sql.Date, date) // Assuming 'date' column is of type Date
-        .input('monthyear', sql.VarChar(50), monthyear) // Assuming 'monthyear' column is of type VARCHAR(50)
+        
         .input('id', sql.Int, id)
         .input('modelId', sql.VarChar(50), modelId)
         .query(query);
