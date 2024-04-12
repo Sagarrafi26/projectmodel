@@ -45,7 +45,8 @@ app.get('/data', getData);
 async function getData(req, res) {
     try {
       const query = `
-        Select * From ModelTable
+      SELECT *
+      FROM newproduction       
       `;
       const result = await pool.request().query(query);
       res.json({ data: result.recordset });
@@ -61,7 +62,7 @@ async function getData(req, res) {
     const { productionValue, date, id, modelId } = req.body;
     try {
       const query = `
-        UPDATE ModelTable
+        UPDATE newproduction
         SET Production_values = @productionValue,
             date = @date,
             ModelId=@modelId
